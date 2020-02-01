@@ -1,4 +1,4 @@
-# dero-wallet
+# DERO Wallet
 
 ## Project setup
 ```

@@ -17,7 +17,7 @@
           <div v-show="menu" id="side-menu">
             <ul class="buttons" v-for="(btn, i) in (walletOpened ? buttonsWalletOpen : buttons)" :key="i">
               <li>
-                <v-btn class="button" :to="btn.to" text>{{ btn.name }}</v-btn>
+                <v-btn class="button" :to="btn.to" @click="mobile ? menu = !menu : ''" text>{{ btn.name }}</v-btn>
               </li>
             <v-divider></v-divider>
             </ul>
@@ -53,7 +53,7 @@ export default {
   data() {
     return {
       menu: true,
-      mobile: false,
+      mobile: true,
       walletOpened: false,
       buttons: [
         {

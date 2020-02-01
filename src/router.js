@@ -1,15 +1,17 @@
 import VueRouter from 'vue-router'
 import Vue from 'vue'
 import Recover from './views/Recover.vue'
+import New from './views/New.vue'
+import About from './views/About.vue'
+import Send from './views/Send.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
     { path: '/', component: Recover },
-    { path: '/recover', component: null },
-    { path: '/new', component: null },
-    { path: '/about', component: null },
-    { path: '/send', component: null },
+    { path: '/new', component: New },
+    { path: '/about', component: About },
+    { path: '/send', component: Send },
     { path: '/receive', component: null },
     { path: '/history', component: null },
   ];
