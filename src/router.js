@@ -4,6 +4,7 @@ import Recover from './views/Recover.vue'
 import New from './views/New.vue'
 import About from './views/About.vue'
 import Send from './views/Send.vue'
+import Receive from './views/Receive.vue'
 
 Vue.use(VueRouter)
 
@@ -12,7 +13,7 @@ const routes = [
     { path: '/new', component: New },
     { path: '/about', component: About },
     { path: '/send', component: Send },
-    { path: '/receive', component: null },
+    { path: '/receive', component: Receive },
     { path: '/history', component: null },
   ];
 

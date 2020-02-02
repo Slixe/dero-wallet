@@ -2,12 +2,11 @@
 <div id="new">
     <h1 class="title-page">CREATE NEW WALLET</h1>
     <v-card class="menu">
-        <label class="new-label">Wallet Name:</label>
-        <v-text-field label="Wallet name for quick reference"></v-text-field>
-        <label class="new-label">Password:</label>
-        <v-text-field label="Password"></v-text-field>
-        <label class="new-label">Confirm Password:</label>
-        <v-text-field label="Confirm password"></v-text-field>
+        <span>Please fill in all the blanks</span>
+        <v-divider class="new-div"></v-divider>
+        <v-text-field label="Wallet name for quick reference" :color="$selectColor" filled></v-text-field>
+        <v-text-field label="Password" :color="$selectColor" filled></v-text-field>
+        <v-text-field label="Confirm password" :color="$selectColor" filled></v-text-field>
         <v-btn outlined class="create-wallet">Create Wallet</v-btn>
     </v-card>
 </div>
@@ -40,6 +39,10 @@
     width: 35%;
     margin: auto;
     margin-top: 6%;
+}
+
+.new-div {
+    margin: 5%;
 }
 
 @media screen and (max-width: 960px) {

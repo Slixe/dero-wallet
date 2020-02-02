@@ -17,7 +17,7 @@
           <div v-show="menu" id="side-menu">
             <ul class="buttons" v-for="(btn, i) in (walletOpened ? buttonsWalletOpen : buttons)" :key="i">
               <li>
-                <v-btn class="button" :to="btn.to" @click="mobile ? menu = !menu : ''" text>{{ btn.name }}</v-btn>
+                <v-btn class="button" :to="btn.to" @click="btn.logout ? walletOpened = false : (mobile ? menu = !menu : '')" text :color="btn.color != null ? btn.color : ''">{{ btn.name }}</v-btn>
               </li>
             <v-divider></v-divider>
             </ul>
@@ -53,8 +53,8 @@ export default {
   data() {
     return {
       menu: true,
-      mobile: true,
-      walletOpened: false,
+      mobile: false,
+      walletOpened: true,
       buttons: [
         {
           name: "Recover Wallet",
@@ -71,12 +71,12 @@ export default {
       ],
       buttonsWalletOpen: [
         {
-          name: "Send",
-          to: "/send"
-        },
-        {
           name: "Receive",
           to: "/receive"
+        },
+        {
+          name: "Send",
+          to: "/send"
         },
         {
           name: "History",
@@ -84,7 +84,8 @@ export default {
         },
         {
           name: "Logout",
-          to: "/logout"
+          color: "red",
+          logout: true,
         },
         {
           name: "About",

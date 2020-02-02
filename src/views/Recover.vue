@@ -3,11 +3,12 @@
     <h1 class="title-page">RECOVER WALLET</h1>
     <v-card class="menu">
         <h2>Available Wallets</h2>
-        <v-select :items="availableWallets" class="wallet-select"></v-select>
+        <v-select :items="availableWallets" :color="$selectColor" :item-color="$selectColor" class="wallet-select"></v-select>
         <div class="select-buttons">
             <v-btn color="success" class="select-button" outlined>Open Selected Wallet</v-btn>
             <v-btn color="error" class="select-button" outlined>Delete Selected Wallet</v-btn>
         </div>
+        <v-divider class="div-space"></v-divider>
         <div class="recover-buttons">
             <v-btn outlined v-for="(button, key) in recoverButtons" :key="key" class="recover-button">{{ button }}</v-btn>
         </div>
@@ -39,7 +40,6 @@ export default {
 
 .wallet-select {
     width: 50%;
-    text-align: center;
     margin: auto;
 }
 
@@ -64,6 +64,12 @@ export default {
 .recover-view-wallet {
     margin-top: 6%;
     width: 35%;
+}
+
+.div-space {
+    margin: 5%;
+    margin-left: 15%;
+    margin-right: 15%;
 }
 
 @media screen and (max-width: 960px)
@@ -91,8 +97,8 @@ export default {
         width: auto;
     }
     .select-button {
+        margin: auto;
         margin-bottom: 5%;
-        width: auto;
     }
     .title-page {
         margin-top: 5%;

@@ -1,12 +1,11 @@
 <template>
 <div id="send">
     <h1>SEND DERO</h1>
-    <span>Please note that sending to another address is irreversible.</span>
     <v-card class="menu">
-        <label class="new-label">DERO Address:</label>
-        <v-text-field label="DERO Address"></v-text-field>
-        <label class="new-label">DERO Amount:</label>
-        <v-text-field label="Amount"></v-text-field>
+        <span>Please note that sending to another address is irreversible.</span>
+        <v-divider class="send-div"></v-divider>
+        <v-text-field label="DERO Address" :color="$selectColor" filled></v-text-field>
+        <v-text-field label="Amount" :color="$selectColor" filled></v-text-field>
         <label class="new-label">PaymentID:</label>
         <div class="payment-id">
             <v-radio-group v-model="paymentId" row>
@@ -14,8 +13,8 @@
                 <v-radio color="red" label="No" value="no"></v-radio>
             </v-radio-group>
         </div>
-        <div v-show='paymentId === "yes"' class="payment">
-            <v-text-field label="Payment ID"></v-text-field>
+        <div v-show='paymentId === "yes"'>
+            <v-text-field label="Payment ID" :color="$selectColor" filled></v-text-field>
         </div>
         <v-btn outlined class="send-transaction">Send Transaction</v-btn>
     </v-card>
@@ -49,6 +48,8 @@ export default {
 }
 
 .send-transaction {
+    margin: auto;
+    margin-top: 5%;
     width: auto;
 }
 
@@ -62,7 +63,19 @@ export default {
     margin: auto;
 }
 
-.payment {
-    margin-bottom: 5%;
+.send-div {
+    margin: 5%;
+}
+
+@media screen and (max-width: 960px) {
+    .menu {
+        margin-top: 3%;
+        margin-left: 2%;
+        margin-right: 2%;
+        margin-bottom: 3%;
+
+        padding-top: 5%;
+        padding-bottom: 5%;
+    }
 }
 </style>

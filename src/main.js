@@ -8,6 +8,8 @@ import 'material-design-icons-iconfont/dist/material-design-icons.css'
 Vue.config.productionTip = false
 Vue.prototype.$name = "DERO"
 Vue.prototype.$donations = false
+Vue.prototype.$selectColor = "grey lighten-4"
+
 Vue.use(Vuetify)
 new Vue({
   render: h => h(App),
