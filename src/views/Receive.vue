@@ -32,12 +32,32 @@
             </div>
         </div>
     </v-card>
+    <v-card class="chart" v-if="chartReady">
+        <apexchart type="line" :options="priceChart.options" :series="priceChart.datas"></apexchart>
+    </v-card>
 </div>
 </template>
 
 <script>
+import * as chart from '../charts'
+import VueApexCharts from 'vue-apexcharts'
+
 export default {
-    
+    components: {
+        apexchart: VueApexCharts,
+    },
+    data() {
+        return {
+            priceChart: {},
+            chartReady: false
+        }
+    },
+    mounted() {
+        chart.priceChart().then(data => {
+            this.priceChart = data
+            this.chartReady = true
+        })
+    }
 }
 </script>
 
@@ -62,6 +82,15 @@ export default {
     padding: 2%;
     flex: 1;
     margin: auto;
+}
+
+.chart {
+    width: 50%;
+    margin: 2%;
+    margin-top: 3%;
+    margin-bottom: 3%;
+
+    padding: 2%;
 }
 
 .wallet-name {
