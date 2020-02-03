@@ -22,7 +22,7 @@
             <v-divider></v-divider>
             </ul>
           </div>
-          <div id="router-content">
+          <div id="router-content" v-show="mobile ? !menu : true">
             <transition name="fade">
               <router-view></router-view>
             </transition>
@@ -93,6 +93,9 @@ export default {
         }
       ]
     }
+  },
+  mounted() {
+    this.mobile = (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1)
   }
 }
 </script>

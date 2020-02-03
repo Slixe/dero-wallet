@@ -72,7 +72,9 @@ export async function priceChart()
     
     for (let i = 0; i < val.length; i++)
     {
-        categories.push(new Date(val[i][0]))
+        let m = new Date(val[i][0])
+        var date = m.getUTCFullYear() +"/"+ (m.getUTCMonth()+1) +"/"+ m.getUTCDate() + " " + m.getUTCHours() + ":" + m.getUTCMinutes() + ":" + m.getUTCSeconds();
+        categories.push(date)
         data.push(val[i][1].toFixed(5))
     }
 

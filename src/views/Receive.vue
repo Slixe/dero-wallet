@@ -1,9 +1,9 @@
 <template>
 <div id="receive">
-    <v-card class="first-menu">
-        <div class="first-side-menu">
+    <div class="container-menu">
+        <v-card class="default-menu">
             <h1>SYNC INFO</h1>
-            <v-divider class="div-space div-bott"></v-divider>
+            <v-divider class="espaced"></v-divider>
             <div class="div-space">
                 <label>5736723 / 5736723</label>
                 <v-progress-linear class="espaced" color="green" value="100" height="17">
@@ -14,15 +14,15 @@
                 <h4>Daemon:</h4>
                 <span>https://wallet.dero.io:443</span>
             </div>
-        </div>
-        <v-card color="grey darken-2" class="middle-menu">
+        </v-card>
+        <v-card color="grey darken-2" class="default-menu">
             <h4 class="wallet-name">MAIN WALLET</h4>
             <h2>1024 DERO</h2>
             <span>{{ 1024 * 0.4 }} €</span>
             <v-divider class="div-space"></v-divider>
-            <span>dERokevAZEZVJ2N7o39VH81BXBqX9ojtncnPTDMyiVbmYiTXQY93AUCLcor9xsWCKWhYy25ja89ikZWXWab9kXRB7LYfUmbQyS</span>
+            <span class="div-space">dERokevAZEZVJ2N7o39VH81BXBqX9ojtncnPTDMyiVbmYiTXQY93AUCLcor9xsWCKWhYy25ja89ikZWXWab9kXRB7LYfUmbQyS</span>
         </v-card>
-        <div class="first-side-menu">
+        <v-card class="default-menu">
             <h1>BALANCE</h1>
             <v-divider class="div-space div-bott"></v-divider>
             <div>
@@ -30,11 +30,18 @@
                 <h4 class="espaced">Locked: 0</h4>
                 <h4 class="espaced">Unlocked: 0</h4>
             </div>
-        </div>
-    </v-card>
-    <v-card class="chart" v-if="chartReady">
-        <apexchart type="line" :options="priceChart.options" :series="priceChart.datas"></apexchart>
-    </v-card>
+        </v-card>
+    </div>
+    <div class="container-menu">
+        <v-card class="default-menu second-menu chart" v-if="chartReady">
+            <h1>Price Chart</h1>
+            <apexchart type="line" :options="priceChart.options" :series="priceChart.datas"></apexchart>
+        </v-card>
+        <v-card color="grey darken-2" class="default-menu second-menu" elevation="10">
+            <h1>Last Transactions</h1>
+            <v-divider class="div-space div-bott"></v-divider>
+        </v-card>
+    </div>
 </div>
 </template>
 
@@ -62,47 +69,35 @@ export default {
 </script>
 
 <style scoped>
-.first-menu  {
+.container-menu  {
+    margin-top: 5%;
     margin-left: 2%;
     margin-right: 2%;
     display: flex;
-    flex-wrap: nowrap;
     flex-direction: row;
+    flex-wrap: nowrap;
+    word-break: break-all;
+    align-items: stretch;
 }
 
-.first-side-menu {
-    width: 25%;
-    height: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 2%;
+.default-menu {
+    width: 100%;
+    margin-bottom: 3%;
+    padding: 3%;
 }
 
-.middle-menu {
-    padding: 2%;
-    flex: 1;
-    margin: auto;
+.second-menu {
+    width: auto;
 }
 
 .chart {
-    width: 50%;
-    margin: 2%;
-    margin-top: 3%;
-    margin-bottom: 3%;
-
-    padding: 2%;
-}
-
-.wallet-name {
-    margin-bottom: 2%;
+    flex: 1;
+    padding: 0%;
+    padding-top: 1%;
 }
 
 .div-space {
     margin: 3%;
-}
-
-.div-bott {
-    margin-bottom: 10%;
 }
 
 .espaced {
@@ -110,4 +105,9 @@ export default {
     margin-bottom: 2%;
 }
 
+@media screen and (max-width: 960px) {
+    .container-menu  {
+        flex-direction: column;
+    }
+}
 </style>
