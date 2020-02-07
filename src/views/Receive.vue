@@ -5,30 +5,30 @@
             <h1>SYNC INFO</h1>
             <v-divider class="espaced"></v-divider>
             <div class="div-space">
-                <label>5736723 / 5736723</label>
-                <v-progress-linear class="espaced" color="green" value="100" height="17">
-                    <strong>100%</strong>
+                <label>{{ walletTopoHeight }} / {{ daemonTopoHeight }}</label>
+                <v-progress-linear class="espaced" :color="(daemonTopoHeight / walletTopoHeight) == 1 ? 'green' : 'red'" :value="walletTopoHeight > 0 ? (daemonTopoHeight / walletTopoHeight).toFixed(0) * 100 : 100" height="17">
+                    <strong>{{ walletTopoHeight > 0 ? (daemonTopoHeight / walletTopoHeight).toFixed(2) * 100 : 100 }} %</strong>
                 </v-progress-linear>
             </div>
             <div class="div-space">
                 <h4>Daemon:</h4>
-                <span>https://wallet.dero.io:443</span>
+                <span>{{ daemonAddress }}</span>
             </div>
         </v-card>
         <v-card color="grey darken-2" class="default-menu">
             <h4 class="wallet-name">MAIN WALLET</h4>
-            <h2>1024 DERO</h2>
-            <span>{{ 1024 * 0.4 }} €</span>
+            <h2>{{ totalBalance }} DERO</h2>
+            <span>{{ totalBalance * 0.4 }} €</span>
             <v-divider class="div-space"></v-divider>
-            <span class="div-space">dERokevAZEZVJ2N7o39VH81BXBqX9ojtncnPTDMyiVbmYiTXQY93AUCLcor9xsWCKWhYy25ja89ikZWXWab9kXRB7LYfUmbQyS</span>
+            <span class="div-space">{{ address }}</span>
         </v-card>
         <v-card class="default-menu">
             <h1>BALANCE</h1>
             <v-divider class="div-space div-bott"></v-divider>
             <div>
-                <h4 class="espaced">Total: 1024</h4>
-                <h4 class="espaced">Locked: 0</h4>
-                <h4 class="espaced">Unlocked: 0</h4>
+                <h4 class="espaced">Total: {{ totalBalance }}</h4>
+                <h4 class="espaced">Locked: {{ lockedBalance }}</h4>
+                <h4 class="espaced">Unlocked: {{ unlockedBalance }}</h4>
             </div>
         </v-card>
     </div>
@@ -48,6 +48,7 @@
 <script>
 import * as chart from '../charts'
 import VueApexCharts from 'vue-apexcharts'
+import * as wallet from '../wallet/wallet'
 
 export default {
     components: {
@@ -56,14 +57,40 @@ export default {
     data() {
         return {
             priceChart: {},
-            chartReady: false
+            chartReady: false,
+            totalBalance: 0,
+            lockedBalance: 0,
+            unlockedBalance: 0,
+            address: "Loading...",
+            daemonTopoHeight: 0,
+            walletTopoHeight: 0,
+            daemonAddress: "No daemon"
         }
     },
-    mounted() {
+    async mounted() {
+        await wallet.waitWASM()
+        
+        setInterval(() => {
+            this.updateInfos()
+        }, 1000) //every 100ms
+
         chart.priceChart().then(data => {
             this.priceChart = data
             this.chartReady = true
         })
+    },
+    methods: {
+        updateInfos() {
+            /* eslint-disable */
+            let infos = wallet.getInfos()
+            this.totalBalance = infos.TotalBalance
+            this.lockedBalance = infos.LockedBalance
+            this.unlockedBalance = infos.UnlockedBalance
+            this.address = infos.WalletAddress
+            this.daemonTopoHeight = infos.DaemonTopoHeight
+            this.walletTopoHeight = infos.WalletTopoHeight
+            this.daemonAddress = infos.WalletDaemonAddress
+        }
     }
 }
 </script>

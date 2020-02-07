@@ -2,7 +2,7 @@
   <div id="app">
     <v-app>
       <header>
-        <v-toolbar id="navbar" elevation="4">
+        <v-toolbar id="navbar">
           <v-btn v-if="mobile" text icon @click="menu = !menu">
             <v-icon>menu</v-icon>
           </v-btn>
@@ -45,6 +45,7 @@
 </template>
 
 <script>
+import * as wallet from './wallet/wallet'
 
 export default {
   name: 'app',
@@ -54,7 +55,7 @@ export default {
     return {
       menu: true,
       mobile: false,
-      walletOpened: true,
+      walletOpened: false,
       buttons: [
         {
           name: "Recover Wallet",
@@ -96,6 +97,7 @@ export default {
   },
   mounted() {
     this.mobile = (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1)
+    wallet.useWASM()
   }
 }
 </script>
@@ -185,5 +187,4 @@ lu, li {
     transition: transform 300ms ease-in-out;
   }
 }
-
 </style>

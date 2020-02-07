@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build-cordova": "/bin/rm -rf /home/slixe/Projects/DERO/dero-wallet-app/www/* && yarn build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
