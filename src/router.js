@@ -5,6 +5,7 @@ import New from './views/New.vue'
 import About from './views/About.vue'
 import Send from './views/Send.vue'
 import Receive from './views/Receive.vue'
+import Home from './views/Home.vue'
 
 Vue.use(VueRouter)
 
@@ -14,6 +15,7 @@ const routes = [
     { path: '/about', component: About },
     { path: '/send', component: Send },
     { path: '/receive', component: Receive },
+    { path: '/home', component: Home },
     { path: '/history', component: null },
   ];
 

@@ -69,8 +69,8 @@ func main() {
 	js.Global().Set("DERO_DumpEncryptedWallet", js.FuncOf(getEncryptedWalletDump))
 	js.Global().Set("DERO_OnlineMode", js.FuncOf(setOnlineMode))
 	js.Global().Set("DERO_CloseWallet", js.FuncOf(closeWallet))
+	js.Global().Set("DERO_GetSeedInLanguage", js.FuncOf(getSeedInLanguage))
 	/*js.Global().Set("DERO_", js.FuncOf())
-	js.Global().Set("DERO_", js.FuncOf())
 	js.Global().Set("DERO_", js.FuncOf())*/
 
 	<-done
@@ -282,4 +282,13 @@ func closeWallet(this js.Value, params []js.Value) interface{} {
 	}
 
 	return Local_wallet_instance == nil
+}
+
+func getSeedInLanguage(this js.Value, params []js.Value) interface{} {
+	seed := "Some error occurred"
+	if Local_wallet_instance != nil && len(params) == 1 {
+		seed = Local_wallet_instance.GetSeedinLanguage(params[0].String())
+	}
+
+	return seed
 }

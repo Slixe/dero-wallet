@@ -1,146 +1,91 @@
 <template>
 <div id="receive">
-    <div class="container-menu">
-        <v-card class="default-menu">
-            <h1>SYNC INFO</h1>
-            <v-divider class="espaced"></v-divider>
-            <div class="div-space">
-                <label>{{ walletTopoHeight }} / {{ daemonTopoHeight }}</label>
-                <v-progress-linear class="espaced" :color="syncValue == 100 ? 'green' : 'red'" :value="syncValue" height="17">
-                    <strong>{{ syncValue }} %</strong>
-                </v-progress-linear>
-            </div>
-            <div class="div-space">
-                <h4>Daemon:</h4>
-                <span>{{ daemonAddress }}</span>
-            </div>
-        </v-card>
-        <v-card color="grey darken-2" class="default-menu">
-            <h4 class="wallet-name">{{ walletName }}</h4>
-            <h2>{{ totalBalance }} DERO</h2>
-            <span>{{ totalBalance * 0.4 }} €</span>
-            <v-divider class="div-space"></v-divider>
-            <span class="div-space">{{ address }}</span>
-        </v-card>
-        <v-card class="default-menu">
-            <h1>BALANCE</h1>
-            <v-divider class="div-space div-bott"></v-divider>
-            <div>
-                <h4 class="espaced">Total: {{ totalBalance }}</h4>
-                <h4 class="espaced">Locked: {{ lockedBalance }}</h4>
-                <h4 class="espaced">Unlocked: {{ unlockedBalance }}</h4>
-            </div>
-        </v-card>
-    </div>
-    <div class="container-menu">
-        <v-card class="default-menu second-menu chart" v-if="chartReady">
-            <h1>Price Chart</h1>
-            <apexchart type="line" :options="priceChart.options" :series="priceChart.datas"></apexchart>
-        </v-card>
-        <v-card color="grey darken-2" class="default-menu second-menu" elevation="10">
-            <h1>Last Transactions</h1>
-            <v-divider class="div-space div-bott"></v-divider>
-        </v-card>
-    </div>
+    <h1 class="title-page">RECEIVE DERO</h1>
+    <v-card class="menu">
+        <h2>Wallet Address</h2>
+        <v-divider class="new-div"></v-divider>
+        <v-text-field v-model="walletAddress" label="Wallet Address" :color="$selectColor" filled disabled></v-text-field>
+        <v-text-field v-show="paymentID != ''" v-model="integratedAddress" label="Integrated Address" :color="$selectColor" filled disabled></v-text-field>
+        <v-text-field v-show="paymentID != ''" v-model="paymentID" label="Payment ID (8 bytes)" :color="$selectColor" filled disabled></v-text-field>
+        <v-btn outlined class="generate-ia" @click.prevent="generateIA()">Generate Integrated Address</v-btn>
+    </v-card>
 </div>
 </template>
 
 <script>
-import * as chart from '../charts'
-import VueApexCharts from 'vue-apexcharts'
 import * as wallet from '../wallet/wallet'
 
 export default {
-    components: {
-        apexchart: VueApexCharts,
-    },
     data() {
         return {
-            priceChart: {},
-            chartReady: false,
-            walletName: "",
-            totalBalance: 0,
-            lockedBalance: 0,
-            unlockedBalance: 0,
-            address: "Loading...",
-            daemonTopoHeight: 0,
-            walletTopoHeight: 0,
-            daemonAddress: "No daemon",
-            syncValue: 0
+            walletAddress: "",
+            integratedAddress: "",
+            paymentID: ""
         }
     },
-    async mounted() {
-        this.walletName = wallet.getWalletName()
-        await wallet.waitWASM()
-        
-        setInterval(() => {
-            if (this.walletName)
-                this.updateInfos()
-        }, 1000) //every 100ms
-
-        chart.priceChart().then(data => {
-            this.priceChart = data
-            this.chartReady = true
-        })
+    mounted() {
+        let infos = wallet.getInfos()
+        this.walletAddress = infos.WalletAddress
     },
     methods: {
-        updateInfos() {
-            /* eslint-disable */
-            let infos = wallet.getInfos()
-            this.totalBalance = infos.TotalBalance
-            this.lockedBalance = infos.LockedBalance
-            this.unlockedBalance = infos.UnlockedBalance
-            this.address = infos.WalletAddress
-            this.daemonTopoHeight = infos.DaemonTopoHeight
-            this.walletTopoHeight = infos.WalletTopoHeight
-            this.daemonAddress = infos.WalletDaemonAddress
-
-            this.syncValue = ((this.walletTopoHeight / this.daemonTopoHeight) * 100).toFixed(0)
+        generateIA() {
+            let ia = wallet.generateIntegratedAddress()
+            this.integratedAddress = ia.Address
+            this.paymentID = ia.PaymentId
         }
     }
 }
 </script>
 
 <style scoped>
-.container-menu  {
-    margin-top: 5%;
+.menu {
+    margin-top: 3%;
+    margin-left: 20%;
+    margin-right: 20%;
+    margin-bottom: 3%;
+
+    padding-top: 2%;
+    padding-bottom: 2%;
+    padding-left: 10%;
+    padding-right: 10%;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.new-label {
+    text-align: center;
+}
+
+.generate-ia {
+    width: auto;
+    margin: auto;
+    margin-top: 6%;
+}
+
+.new-div {
+    margin: 5%;
     margin-left: 2%;
     margin-right: 2%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    word-break: break-all;
-    align-items: stretch;
-}
-
-.default-menu {
-    width: 100%;
-    margin-bottom: 3%;
-    padding: 3%;
-}
-
-.second-menu {
-    width: auto;
-}
-
-.chart {
-    flex: 1;
-    padding: 0%;
-    padding-top: 1%;
-}
-
-.div-space {
-    margin: 3%;
-}
-
-.espaced {
-    margin-top: 2%;
-    margin-bottom: 2%;
 }
 
 @media screen and (max-width: 960px) {
-    .container-menu  {
-        flex-direction: column;
+    .menu {
+        margin-top: 3%;
+        margin-left: 2%;
+        margin-right: 2%;
+        margin-bottom: 3%;
+
+        padding-top: 5%;
+        padding-bottom: 5%;
+    }
+
+    .create-wallet {
+        width: auto;
+    }
+
+    .title-page {
+        margin-top: 5%;
     }
 }
 </style>

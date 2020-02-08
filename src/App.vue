@@ -73,6 +73,10 @@ export default {
       ],
       buttonsWalletOpen: [
         {
+          name: "Home",
+          to: "/home"
+        },
+        {
           name: "Receive",
           to: "/receive"
         },

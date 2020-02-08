@@ -2,6 +2,9 @@
 <div id="main">
     <h1 class="title-page">RECOVER WALLET</h1>
     <v-card class="menu">
+        <v-alert v-show="alertShow" :type="alertType">
+            {{ alertMessage }}
+        </v-alert>
         <h2>Available Wallets</h2>
         <v-select v-model="walletSelected" :items="availableWallets" item-text="name" :color="$selectColor" :item-color="$selectColor" class="wallet-select"></v-select>
         <div class="select-buttons">
@@ -25,7 +28,10 @@ export default {
         return {
             walletSelected: null,
             availableWallets: [],
-            recoverButtons: ["Recover using Seed", "Recover using Recovery Key", "Recover using File"]
+            recoverButtons: ["Recover using Seed", "Recover using Recovery Key", "Recover using File"],
+            alertType: "error",
+            alertShow: false,
+            alertMessage: "An error as occured!"
         }
     },
     mounted() {
@@ -37,7 +43,18 @@ export default {
             {
                 let walletDump = wallet.getEncryptedWallet(this.walletSelected)
                 if (wallet.openEncryptedWallet(this.walletSelected, prompt("Password for this wallet:"), walletDump)) {
-                    this.$router.push('/receive')
+                    this.alertType = "success"
+                    this.alertMessage = "Wallet successfully opened!"
+                    this.alertShow = true
+
+                    setTimeout(() => {
+                        this.$router.push('/home')
+                    } , 1500) //1.5s
+                } else {
+                    this.alertMessage = "Incorrect password for this wallet !"
+                    this.alertShow = true
+
+                    setTimeout(() => this.alertShow = false, 5000) //after 5s
                 }
             }
         },

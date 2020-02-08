@@ -27,6 +27,9 @@ export async function useWASM()
 
     EventBus.$on('closeWallet', closeWallet => {
         if (closeWallet) {
+            let walletDump = dumpEncryptedWallet()
+            updateEncryptedWallet(walletName, walletDump)
+
             DERO_OnlineMode(false)
             let result = DERO_CloseWallet()
             hasWallet = false
@@ -101,6 +104,12 @@ export function addEncryptedWallet(walletName, walletDump)
     localStorage.setItem("wallets", JSON.stringify(wallets))
 }
 
+export function updateEncryptedWallet(walletName, walletDump)
+{
+    removeEncryptedWallet(walletName)
+    addEncryptedWallet(walletName, walletDump)
+}
+
 export function removeEncryptedWallet(walletName)
 {
     let wallets = getEncryptedWallets()
@@ -166,6 +175,18 @@ export function getInfos()
 {
     let result = DERO_GetInfos()
     return JSON.parse(result)
+}
+
+export function generateIntegratedAddress()
+{
+    let result = DERO_GenerateIntegratedAddress()
+
+    return JSON.parse(result)
+}
+
+export function getSeedInLanguage(language)
+{
+    return DERO_GetSeedInLanguage(language)
 }
 
 export function setWalletName(name)

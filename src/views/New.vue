@@ -1,7 +1,7 @@
 <template>
 <div id="new">
     <h1 class="title-page">CREATE NEW WALLET</h1>
-    <v-card class="menu">
+    <v-card v-if="!showSeed" class="menu">
         <v-alert v-show="alertShow" :type="alertType">
             {{ alertMessage }}
         </v-alert>
@@ -11,6 +11,17 @@
         <v-text-field autocomplete="new-password" type="password" v-model="password" label="Password" :color="$selectColor" filled :disabled="btnDisabled"></v-text-field>
         <v-text-field autocomplete="new-password" type="password" label="Confirm password" :color="$selectColor" filled :disabled="btnDisabled"></v-text-field>
         <v-btn outlined class="create-wallet" @click.prevent="newWallet()" :disabled="btnDisabled">Create Wallet</v-btn>
+    </v-card>
+    <v-card v-else class="menu">
+        <h1>WALLET SEED</h1>
+        <v-divider class="new-div"></v-divider>
+        <span><font color="#D32F2F">Your wallet can be recovered using the below seed.</font></span>
+        <span><font color="#D32F2F">You must save the SEED in a safe secure location.</font></span>
+        <span><font color="#D32F2F">Sharing your SEED is equal to sharing your wallet. If your SEED is lost, consider your wallet as lost.</font></span>
+        <v-divider class="new-div"></v-divider>
+        <v-select label="Language" :color="$selectColor" :item-color="$selectColor" :items="seedLanguages" v-model="seedSelected" @change="seed()" outlined></v-select>
+        <v-textarea label="SEED" auto-grow :value="walletSeed" disabled filled></v-textarea>
+        <v-btn outlined class="create-wallet" to="/home">I saved it!</v-btn>
     </v-card>
 </div>
 </template>
@@ -26,22 +37,40 @@ export default {
             alertType: "error",
             alertShow: false,
             alertMessage: "An error as occured!",
-            btnDisabled: false
+            btnDisabled: false,
+            walletSeed: "",
+            showSeed: false,
+            seedSelected: "English",
+            seedLanguages: ["English", "Français", "Deutsch", "Italiano", "Español", "Português", "Nederlands", "Esperanto", "русский язык", "日本語", "简体中文 (中国)"]
         }
     },
     methods: {
         async newWallet() {
             this.btnDisabled = true
+
+            if (wallet.getEncryptedWallet(this.walletName) != null) {
+                this.alertMessage = "This wallet name is already used!"
+                this.alertShow = true
+                this.btnDisabled = false
+                setTimeout(() => this.alertShow = false, 5000) //after 5s
+
+                return;
+            }
+
             let result = wallet.createWallet(this.walletName, this.password) //TODO async
             if (result === "success") {
                 this.alertType = "success"
                 this.alertMessage = "Wallet successfully created!"
                 this.alertShow = true
-                this.$walletName = this.walletName
+                this.walletSeed = wallet.getSeedInLanguage(this.seedSelected)
+
                 setTimeout(() => {
-                    this.$router.push('/receive')
+                    this.showSeed = true
                 } , 1500) //1.5s
             }
+        },
+        seed() {
+            this.walletSeed = wallet.getSeedInLanguage(this.seedSelected)
         }
     }
 }
