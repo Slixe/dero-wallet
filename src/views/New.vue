@@ -32,7 +32,7 @@ export default {
     methods: {
         async newWallet() {
             this.btnDisabled = true
-            let result = wallet.createWallet(this.password) //TODO async
+            let result = wallet.createWallet(this.walletName, this.password) //TODO async
             if (result === "success") {
                 this.alertType = "success"
                 this.alertMessage = "Wallet successfully created!"
@@ -68,7 +68,7 @@ export default {
 }
 
 .create-wallet {
-    width: 35%;
+    width: auto;
     margin: auto;
     margin-top: 6%;
 }

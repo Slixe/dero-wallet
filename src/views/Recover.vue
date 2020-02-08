@@ -3,10 +3,10 @@
     <h1 class="title-page">RECOVER WALLET</h1>
     <v-card class="menu">
         <h2>Available Wallets</h2>
-        <v-select :items="availableWallets" :color="$selectColor" :item-color="$selectColor" class="wallet-select"></v-select>
+        <v-select v-model="walletSelected" :items="availableWallets" item-text="name" :color="$selectColor" :item-color="$selectColor" class="wallet-select"></v-select>
         <div class="select-buttons">
-            <v-btn color="success" class="select-button" outlined>Open Selected Wallet</v-btn>
-            <v-btn color="error" class="select-button" outlined>Delete Selected Wallet</v-btn>
+            <v-btn color="success" class="select-button" @click="openWallet()" outlined>Open Selected Wallet</v-btn>
+            <v-btn color="error" class="select-button" @click="deleteWallet()" outlined>Delete Selected Wallet</v-btn>
         </div>
         <v-divider class="div-space"></v-divider>
         <div class="recover-buttons">
@@ -18,11 +18,35 @@
 </template>
 
 <script>
+import * as wallet from '../wallet/wallet'
+
 export default {
     data() {
         return {
-            availableWallets: ["Main Wallet", "Test Wallet", "Slixe"],
+            walletSelected: null,
+            availableWallets: [],
             recoverButtons: ["Recover using Seed", "Recover using Recovery Key", "Recover using File"]
+        }
+    },
+    mounted() {
+        this.availableWallets = wallet.getEncryptedWallets()
+    },
+    methods: {
+        openWallet() {
+            if (this.walletSelected != null)
+            {
+                let walletDump = wallet.getEncryptedWallet(this.walletSelected)
+                if (wallet.openEncryptedWallet(prompt("Password for this wallet:"), walletDump)) {
+                    this.$router.push('/receive')
+                }
+            }
+        },
+        deleteWallet() {
+           if (this.walletSelected != null)
+           {
+               wallet.removeEncryptedWallet(this.walletSelected)
+               this.availableWallets = wallet.getEncryptedWallets()
+           } 
         }
     }
 }
@@ -58,12 +82,12 @@ export default {
 
 .recover-button {
     margin-bottom: 2%;
-    width: 35%;
+    width: auto;
 }
 
 .recover-view-wallet {
     margin-top: 6%;
-    width: 35%;
+    width: auto;
 }
 
 .div-space {

@@ -118,7 +118,9 @@ export default {
   overflow-y: auto;
   flex: 15%;
   height: 100%;
+  width: 255px;
   background-color: #525252;
+  position: fixed;
   z-index: 1;
 }
 
@@ -128,6 +130,7 @@ export default {
   padding-right: 1%;
   padding-top: 2%;
   padding-bottom: 2%;
+  margin-left: 255px;
 }
 
 .wallet-content {
@@ -153,6 +156,7 @@ export default {
 }
 
 .button {
+  margin: auto;
   margin-bottom: 20px;
   width: 100%;
 }
@@ -185,6 +189,9 @@ lu, li {
     width: 100%;
     position: fixed;
     transition: transform 300ms ease-in-out;
+  }
+  #router-content {
+    margin-left: 0px;
   }
 }
 </style>

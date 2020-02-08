@@ -254,7 +254,10 @@ func getEncryptedWalletDump(this js.Value, params []js.Value) interface{} {
 		} 
 	}
 
-	return string(encrypted_bytes)
+	dst := make([]byte, hex.EncodedLen(len(encrypted_bytes)))
+	hex.Encode(dst, encrypted_bytes)
+
+	return string(dst)
 }
 
 func setOnlineMode(this js.Value, params []js.Value) interface{} {

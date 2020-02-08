@@ -2,18 +2,6 @@
 const go = new Go();
 let wasmReady = false
 
-function arrayBufferToHex(view) {
-    let result = "";
-
-    for (var i = 0; i < view.length; i++)
-    {
-        let value = view[i].toString(16)
-        result += (value.length === 1 ? '0' + value : value)
-    }
-
-    return result
-}
-
 export async function useWASM()
 {
     if (wasmReady) {
@@ -55,12 +43,68 @@ export function dumpEncryptedWallet()
 {
     let result = DERO_DumpEncryptedWallet()
 
-    if (result.length > 500) {
-        result = new Uint8Array(result)
+    return result
+}
+
+export function getWalletsNames()
+{
+    let names = []
+    for (const value of getEncryptedWallets())
+    {
+        names.push(value.name)
     }
 
+    return names
+}
 
-    return result
+export function getEncryptedWallets()
+{
+    return JSON.parse(localStorage.getItem("wallets")) || []
+}
+
+export function getEncryptedWallet(walletName)
+{
+    const wallets = getEncryptedWallets()
+    let wallet = null
+    let i = 0
+    while (wallet == null && i < wallets.length)
+    {
+        let value = wallets[i]
+
+        if (value.name === walletName)
+            wallet = value.wallet
+        i++
+    }
+    return wallet
+}
+
+export function addEncryptedWallet(walletName, walletDump)
+{
+    let walletJson = {name: walletName, wallet: walletDump }
+    let wallets = getEncryptedWallets()
+    wallets.push(walletJson)
+    localStorage.setItem("wallets", JSON.stringify(wallets))
+}
+
+export function removeEncryptedWallet(walletName)
+{
+    let wallets = getEncryptedWallets()
+    let found = false
+    let i = 0
+    while (!found && i < wallets.length)
+    {
+        let wallet = wallets[i]
+
+        if (wallet.name === walletName)
+        {
+            wallets.splice(i, 1)
+            found = true
+        }
+
+        i++
+    }
+    
+    localStorage.setItem("wallets", JSON.stringify(wallets))
 }
 
 export function createWallet(walletName, password)
@@ -70,7 +114,8 @@ export function createWallet(walletName, password)
     {
         DERO_OnlineMode(true)
         let walletDump = dumpEncryptedWallet()
-        localStorage.setItem("wallet_" + walletName, walletDump) //todo save encrypted wallet
+       
+        addEncryptedWallet(walletName, walletDump)
     }
 
     return result
@@ -78,7 +123,16 @@ export function createWallet(walletName, password)
 
 export function openEncryptedWallet(password, wallet_data)
 {
-    DERO_OpenEncryptedWallet("", password, wallet_data)
+    let result = DERO_OpenEncryptedWallet("", password, wallet_data)
+    result = result === "success"
+
+    if (result)
+    {
+        DERO_OnlineMode(true)
+    }
+
+
+    return result
 }
 
 export function recoverWalletSeed(walletName, password, seed)
