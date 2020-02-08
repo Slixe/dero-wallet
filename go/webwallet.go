@@ -68,8 +68,8 @@ func main() {
 	js.Global().Set("DERO_GetInfos", js.FuncOf(getInfos))
 	js.Global().Set("DERO_DumpEncryptedWallet", js.FuncOf(getEncryptedWalletDump))
 	js.Global().Set("DERO_OnlineMode", js.FuncOf(setOnlineMode))
+	js.Global().Set("DERO_CloseWallet", js.FuncOf(closeWallet))
 	/*js.Global().Set("DERO_", js.FuncOf())
-	js.Global().Set("DERO_", js.FuncOf())
 	js.Global().Set("DERO_", js.FuncOf())
 	js.Global().Set("DERO_", js.FuncOf())*/
 
@@ -273,4 +273,13 @@ func setOnlineMode(this js.Value, params []js.Value) interface{} {
 	}
 
 	return currentState
+}
+
+func closeWallet(this js.Value, params []js.Value) interface{} {
+	if Local_wallet_instance != nil {
+		Local_wallet_instance.Close_Encrypted_Wallet()
+		Local_wallet_instance = nil
+	}
+
+	return Local_wallet_instance == nil
 }

@@ -17,7 +17,7 @@
           <div v-show="menu" id="side-menu">
             <ul class="buttons" v-for="(btn, i) in (walletOpened ? buttonsWalletOpen : buttons)" :key="i">
               <li>
-                <v-btn class="button" :to="btn.to" @click="btn.logout ? walletOpened = false : (mobile ? menu = !menu : '')" text :color="btn.color != null ? btn.color : ''">{{ btn.name }}</v-btn>
+                <v-btn class="button" :to="btn.to" @click="changeState(btn)" text :color="btn.color != null ? btn.color : ''">{{ btn.name }}</v-btn>
               </li>
             <v-divider></v-divider>
             </ul>
@@ -46,6 +46,7 @@
 
 <script>
 import * as wallet from './wallet/wallet'
+import { EventBus } from './event-bus';
 
 export default {
   name: 'app',
@@ -98,6 +99,24 @@ export default {
   mounted() {
     this.mobile = (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1)
     wallet.useWASM()
+
+    EventBus.$on('isWalletOpen', walletOpen => {
+      this.walletOpened = walletOpen
+    })
+  },
+  methods: {
+    changeState(btn)
+    {
+      if (this.mobile) {
+        this.menu = !this.menu
+      }
+      
+      if (btn.logout) {
+        this.walletOpened = false
+        this.$router.push('/')
+        EventBus.$emit('closeWallet', true)
+      }
+    }
   }
 }
 </script>
@@ -120,7 +139,7 @@ export default {
   height: 100%;
   width: 255px;
   background-color: #525252;
-  position: fixed;
+  position: absolute;
   z-index: 1;
 }
 

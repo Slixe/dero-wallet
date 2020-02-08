@@ -37,7 +37,7 @@ export default {
                 this.alertType = "success"
                 this.alertMessage = "Wallet successfully created!"
                 this.alertShow = true
-
+                this.$walletName = this.walletName
                 setTimeout(() => {
                     this.$router.push('/receive')
                 } , 1500) //1.5s

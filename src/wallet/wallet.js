@@ -1,6 +1,11 @@
+import { EventBus } from '../event-bus';
+
 /* eslint-disable */
 const go = new Go();
 let wasmReady = false
+
+let hasWallet = false
+let walletName = "No Wallet"
 
 export async function useWASM()
 {
@@ -19,6 +24,16 @@ export async function useWASM()
     go.run(result.instance);
     console.log("running go");
     wasmReady = true
+
+    EventBus.$on('closeWallet', closeWallet => {
+        if (closeWallet) {
+            DERO_OnlineMode(false)
+            let result = DERO_CloseWallet()
+            hasWallet = false
+            walletName = "No Wallet"
+            console.log("Encrypted Wallet closed: " + result)
+        }
+      })
 }
 
 function sleep(ms) {
@@ -112,6 +127,7 @@ export function createWallet(walletName, password)
     let result = DERO_CreateNewWallet("", password)
     if (result === "success")
     {
+        setWalletName(walletName)
         DERO_OnlineMode(true)
         let walletDump = dumpEncryptedWallet()
        
@@ -121,13 +137,14 @@ export function createWallet(walletName, password)
     return result
 }
 
-export function openEncryptedWallet(password, wallet_data)
+export function openEncryptedWallet(walletName, password, wallet_data)
 {
     let result = DERO_OpenEncryptedWallet("", password, wallet_data)
     result = result === "success"
 
     if (result)
     {
+        setWalletName(walletName)
         DERO_OnlineMode(true)
     }
 
@@ -149,4 +166,22 @@ export function getInfos()
 {
     let result = DERO_GetInfos()
     return JSON.parse(result)
+}
+
+export function setWalletName(name)
+{
+    walletName = name
+    hasWallet = name != null
+
+    EventBus.$emit('isWalletOpen', hasWallet)
+}
+
+export function getWalletName()
+{
+    return walletName
+}
+
+export function hasWalletOpen()
+{
+    return hasWallet
 }

@@ -6,8 +6,8 @@
             <v-divider class="espaced"></v-divider>
             <div class="div-space">
                 <label>{{ walletTopoHeight }} / {{ daemonTopoHeight }}</label>
-                <v-progress-linear class="espaced" :color="(daemonTopoHeight / walletTopoHeight) == 1 ? 'green' : 'red'" :value="walletTopoHeight > 0 ? (daemonTopoHeight / walletTopoHeight).toFixed(0) * 100 : 100" height="17">
-                    <strong>{{ walletTopoHeight > 0 ? (daemonTopoHeight / walletTopoHeight).toFixed(2) * 100 : 100 }} %</strong>
+                <v-progress-linear class="espaced" :color="syncValue == 100 ? 'green' : 'red'" :value="syncValue" height="17">
+                    <strong>{{ syncValue }} %</strong>
                 </v-progress-linear>
             </div>
             <div class="div-space">
@@ -16,7 +16,7 @@
             </div>
         </v-card>
         <v-card color="grey darken-2" class="default-menu">
-            <h4 class="wallet-name">MAIN WALLET</h4>
+            <h4 class="wallet-name">{{ walletName }}</h4>
             <h2>{{ totalBalance }} DERO</h2>
             <span>{{ totalBalance * 0.4 }} €</span>
             <v-divider class="div-space"></v-divider>
@@ -58,20 +58,24 @@ export default {
         return {
             priceChart: {},
             chartReady: false,
+            walletName: "",
             totalBalance: 0,
             lockedBalance: 0,
             unlockedBalance: 0,
             address: "Loading...",
             daemonTopoHeight: 0,
             walletTopoHeight: 0,
-            daemonAddress: "No daemon"
+            daemonAddress: "No daemon",
+            syncValue: 0
         }
     },
     async mounted() {
+        this.walletName = wallet.getWalletName()
         await wallet.waitWASM()
         
         setInterval(() => {
-            this.updateInfos()
+            if (this.walletName)
+                this.updateInfos()
         }, 1000) //every 100ms
 
         chart.priceChart().then(data => {
@@ -90,6 +94,8 @@ export default {
             this.daemonTopoHeight = infos.DaemonTopoHeight
             this.walletTopoHeight = infos.WalletTopoHeight
             this.daemonAddress = infos.WalletDaemonAddress
+
+            this.syncValue = ((this.walletTopoHeight / this.daemonTopoHeight) * 100).toFixed(0)
         }
     }
 }

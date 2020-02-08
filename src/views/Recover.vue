@@ -36,7 +36,7 @@ export default {
             if (this.walletSelected != null)
             {
                 let walletDump = wallet.getEncryptedWallet(this.walletSelected)
-                if (wallet.openEncryptedWallet(prompt("Password for this wallet:"), walletDump)) {
+                if (wallet.openEncryptedWallet(this.walletSelected, prompt("Password for this wallet:"), walletDump)) {
                     this.$router.push('/receive')
                 }
             }
