@@ -5,16 +5,13 @@ package main
 import (
 	"encoding/hex"
 	"encoding/json"
-	//"fmt"
 	"syscall/js"
-	//"time"
-	//"strings"
 )
 
 import "github.com/deroproject/derosuite/walletapi"
 import "github.com/deroproject/derosuite/globals"
 import "github.com/deroproject/derosuite/config"
-//import "github.com/deroproject/derosuite/address"
+import "github.com/deroproject/derosuite/address"
 //import "github.com/deroproject/derosuite/transaction"
 //import "github.com/deroproject/derosuite/crypto"
 
@@ -48,9 +45,25 @@ type integratedAddress struct {
 	PaymentId string
 }
 
+type transferResult struct {
+	TxId string
+	TxHex string
+	Fee string
+	Amount string
+	InputsSum string
+	Change string
+}
+
+type addressValid struct {
+	Valid bool
+	Integrated bool
+	Address string
+	PaymentId string
+	Err string
+}
+
 var daemon_address = "https://wallet.dero.io:443"
 var Local_wallet_instance *walletapi.Wallet
-
 var done = make(chan struct{})
 
 func main() {
@@ -70,8 +83,16 @@ func main() {
 	js.Global().Set("DERO_OnlineMode", js.FuncOf(setOnlineMode))
 	js.Global().Set("DERO_CloseWallet", js.FuncOf(closeWallet))
 	js.Global().Set("DERO_GetSeedInLanguage", js.FuncOf(getSeedInLanguage))
-	/*js.Global().Set("DERO_", js.FuncOf())
-	js.Global().Set("DERO_", js.FuncOf())*/
+	js.Global().Set("DERO_Transfer", js.FuncOf(transfer))
+	js.Global().Set("DERO_TransferEverything", js.FuncOf(transferEverything))
+	js.Global().Set("DERO_VerifyPassword", js.FuncOf(verifyPassword))
+	js.Global().Set("DERO_ChangePassword", js.FuncOf(changePassword))
+	js.Global().Set("DERO_ValidateAddress", js.FuncOf(validateAddress))
+
+
+	js.Global().Set("DERO_Callback_GetTxHistory", js.FuncOf(getTxHistory))
+	js.Global().Set("DERO_Callback_CreateNewWallet", js.FuncOf(createNewWalletCallback))
+	js.Global().Set("DERO_Callback_Transfer", js.FuncOf(transfer))
 
 	<-done
 }
@@ -96,6 +117,32 @@ func createNewWallet(this js.Value, params []js.Value) interface{} {
 	}
 
 	return error_message
+}
+
+func createNewWalletCallback(this js.Value, params []js.Value) interface{} {
+	callback := params[len(params)-1:][0]
+
+	go func() {
+		error_message := "error"
+		filename := params[0].String()
+		password := params[1].String()
+	
+		w, err := walletapi.Create_Encrypted_Wallet_Random(filename, password)
+	
+		if err == nil {
+			error_message = "success"
+			Local_wallet_instance = w
+			Local_wallet_instance.SetDaemonAddress(daemon_address)
+			Local_wallet_instance.SetInitialHeight(0)
+			Local_wallet_instance.Rescan_From_Height(0)
+		} else {
+			error_message = err.Error()
+		}
+	
+		callback.Invoke(error_message)
+	}()
+
+	return nil
 }
 
 func createEncryptedWalletFromRecoveryWords(this js.Value, params []js.Value) interface{} {
@@ -291,4 +338,240 @@ func getSeedInLanguage(this js.Value, params []js.Value) interface{} {
 	}
 
 	return seed
+}
+
+func getTxHistory(this js.Value, params []js.Value) interface{} {
+	go func() {
+		callback := params[len(params)-1:][0] //js function passed as param for callback
+
+		error_message := "Wallet is Closed"
+		var buffer []byte
+		var err error
+
+		if Local_wallet_instance != nil {
+			//min_height, _ := strconv.ParseUint(params[6].String(), 0, 64)
+			//max_height, _ := strconv.ParseUint(params[7].String(), 0, 64)
+			entries := Local_wallet_instance.Show_Transfers(params[0].Bool(), params[1].Bool(), params[2].Bool(), params[3].Bool(), params[4].Bool(), params[5].Bool(), 0, 0)
+
+			if len(entries) != 0 {
+				buffer, err = json.Marshal(entries)
+				if err != nil {
+					error_message = err.Error()
+				} else {
+					error_message = "success"
+				}
+			} else {
+				error_message = "no entries"
+			}
+		}
+		callback.Invoke(error_message, string(buffer)) //first param is error message, second is result as json 
+	}()
+
+	return nil
+}
+
+func transfer(this js.Value, params []js.Value) interface{} {
+	go func() {
+		callback := params[len(params)-1:][0]
+		var result transferResult
+		transfer_error := "error"
+
+		defer func() {
+			buffer, err := json.Marshal(result)
+			if err != nil {
+				transfer_error = err.Error()
+			}
+
+			callback.Invoke(transfer_error, string(buffer))
+		}()
+
+		var address_list []address.Address
+		var amount_list []uint64
+
+		if params[0].Length() != params[1].Length() {
+			return
+		}
+
+		for i := 0; i < params[0].Length(); i++ { // convert string address to our native form
+			a, err := globals.ParseValidateAddress(params[0].Index(i).String())
+			if err != nil {
+				transfer_error = err.Error()
+				return
+			}
+			address_list = append(address_list, *a)
+		}
+
+		for i := 0; i < params[1].Length(); i++ { // convert string address to our native form
+			amount, err := globals.ParseAmount(params[1].Index(i).String())
+			if err != nil {
+				transfer_error = err.Error()
+				return
+			}
+
+			amount_list = append(amount_list, amount)
+		}
+
+		payment_id := params[2].String()
+
+		if len(payment_id) > 0 && !(len(payment_id) == 64 || len(payment_id) == 16) {
+			transfer_error = "Invalid payment ID"
+			return
+		}
+		if _, err := hex.DecodeString(payment_id); err != nil {
+			transfer_error = "Invalid payment ID"
+			return
+		}
+
+		unlock_time := uint64(0)
+		fees_per_kb := uint64(0)
+		mixin := uint64(0)
+
+		tx, inputs, input_sum, change, err := Local_wallet_instance.Transfer(address_list, amount_list, unlock_time, payment_id, fees_per_kb, mixin)
+		_ = inputs
+		if err != nil {
+			transfer_error = err.Error()
+			return
+
+		}
+
+		amount := uint64(0)
+		for i := range amount_list {
+			amount += amount_list[i]
+		}
+
+		result.Fee = globals.FormatMoney12(tx.RctSignature.Get_TX_Fee())
+		result.Amount = globals.FormatMoney12(amount)
+		result.Change = globals.FormatMoney12(change)
+		result.InputsSum = globals.FormatMoney12(input_sum)
+		result.TxId = tx.GetHash().String()
+		result.TxHex = hex.EncodeToString(tx.Serialize())
+		transfer_error = "success"
+	}()
+
+	return nil
+}
+
+func transferEverything(this js.Value, params []js.Value) interface{} {
+	go func() {
+		callback := params[len(params)-1:][0]
+		var result transferResult
+		transfer_error := "error"
+
+		defer func() {
+			buffer, err := json.Marshal(result)
+			if err != nil {
+				transfer_error = err.Error()
+			}
+
+			callback.Invoke(transfer_error, string(buffer))
+		}()
+
+		var address_list []address.Address
+		var amount_list []uint64
+
+		if params[0].Length() != 1 {
+			return
+		}
+
+		for i := 0; i < params[0].Length(); i++ { // convert string address to our native form
+			a, err := globals.ParseValidateAddress(params[0].Index(i).String())
+			if err != nil {
+				transfer_error = err.Error()
+				return
+			}
+			address_list = append(address_list, *a)
+		}
+
+		payment_id := params[1].String()
+
+		if len(payment_id) > 0 && !(len(payment_id) == 64 || len(payment_id) == 16) {
+			transfer_error = "Invalid payment ID"
+			return
+		}
+		if _, err := hex.DecodeString(payment_id); err != nil {
+			transfer_error = "Invalid payment ID"
+			return
+		}
+
+		//unlock_time := uint64(0)
+		fees_per_kb := uint64(0)
+		mixin := uint64(0)
+
+		tx, inputs, input_sum, err := Local_wallet_instance.Transfer_Everything(address_list[0], payment_id, 0, fees_per_kb, mixin)
+		_ = inputs
+		if err != nil {
+			transfer_error = err.Error()
+			return
+
+		}
+
+		amount := uint64(0)
+		for i := range amount_list {
+			amount += amount_list[i]
+		}
+		amount = uint64(input_sum - tx.RctSignature.Get_TX_Fee())
+		change := uint64(0)
+
+		result.Fee = globals.FormatMoney12(tx.RctSignature.Get_TX_Fee())
+		result.Amount = globals.FormatMoney12(amount)
+		result.Change = globals.FormatMoney12(change)
+		result.InputsSum = globals.FormatMoney12(input_sum)
+		result.TxId = tx.GetHash().String()
+		result.TxHex = hex.EncodeToString(tx.Serialize())
+		transfer_error = "success"
+	}()
+
+	return nil
+}
+
+func verifyPassword(this js.Value, params []js.Value) interface{} {
+	result := false
+	if Local_wallet_instance != nil {
+		result = Local_wallet_instance.Check_Password(params[0].String())
+	}
+
+	return result
+}
+
+func changePassword(this js.Value, params []js.Value) interface{} {
+	result := false
+
+	if Local_wallet_instance != nil {
+		Local_wallet_instance.Set_Encrypted_Wallet_Password(params[0].String())
+		result = true
+	}
+
+	return result
+}
+
+func validateAddress(this js.Value, params []js.Value) interface {} {
+	var result addressValid
+
+	addr, err := globals.ParseValidateAddress(params[0].String())
+
+	if err == nil {
+		result.Valid = true
+		if addr.IsIntegratedAddress() {
+			result.Integrated = true
+
+			dst := make([]byte, hex.EncodedLen(len(addr.PaymentID)))
+			hex.Encode(dst, addr.PaymentID)
+			result.PaymentId = string(dst)
+
+		} else {
+			result.Integrated = false
+		}
+		result.Err = "success"
+	} else {
+		result.Valid = false
+		result.Integrated = false
+		result.Err = err.Error()
+	}
+
+	res, err := json.Marshal(result)
+	if err != nil {
+		result.Err = err.Error()
+	}
+
+	return string(res)
 }

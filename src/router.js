@@ -6,6 +6,8 @@ import About from './views/About.vue'
 import Send from './views/Send.vue'
 import Receive from './views/Receive.vue'
 import Home from './views/Home.vue'
+import History from './views/History.vue'
+import Seed from './views/recover/Seed.vue'
 
 Vue.use(VueRouter)
 
@@ -16,7 +18,9 @@ const routes = [
     { path: '/send', component: Send },
     { path: '/receive', component: Receive },
     { path: '/home', component: Home },
-    { path: '/history', component: null },
+    { path: '/history', component: History },
+
+    { path: '/recover-seed', component: Seed }
   ];
 
 export default new VueRouter({

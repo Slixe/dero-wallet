@@ -5,6 +5,7 @@
             <h1>SYNC INFO</h1>
             <v-divider class="espaced"></v-divider>
             <div class="div-space">
+                <h5>Wallet TopoHeight / Daemon TopoHeight</h5>
                 <label>{{ walletTopoHeight }} / {{ daemonTopoHeight }}</label>
                 <v-progress-linear class="espaced" :color="syncValue == 100 ? 'green' : 'red'" :value="syncValue" height="17">
                     <strong>{{ isNaN(syncValue) ? 0 : syncValue }} %</strong>
@@ -17,8 +18,8 @@
         </v-card>
         <v-card color="grey darken-2" class="default-menu">
             <h4 class="wallet-name">{{ walletName }}</h4>
-            <h2>{{ totalBalance }} DERO</h2>
-            <span>{{ totalBalance * 0.4 }} €</span>
+            <h2>{{ totalBalance.toFixed(12) }} DERO</h2>
+            <span>{{ totalBalance * currentPrice }} €</span>
             <v-divider class="div-space"></v-divider>
             <span class="div-space">{{ address }}</span>
         </v-card>
@@ -26,9 +27,9 @@
             <h1>BALANCE</h1>
             <v-divider class="div-space div-bott"></v-divider>
             <div>
-                <h4 class="espaced">Total: {{ totalBalance }}</h4>
-                <h4 class="espaced">Locked: {{ lockedBalance }}</h4>
-                <h4 class="espaced">Unlocked: {{ unlockedBalance }}</h4>
+                <h4 class="espaced">Total: {{ totalBalance.toFixed(12) }}</h4>
+                <h4 class="espaced">Locked: {{ lockedBalance.toFixed(12) }}</h4>
+                <h4 class="espaced">Unlocked: {{ unlockedBalance.toFixed(12) }}</h4>
             </div>
         </v-card>
     </div>
@@ -48,7 +49,7 @@
 <script>
 import * as chart from '../charts'
 import VueApexCharts from 'vue-apexcharts'
-import * as wallet from '../wallet/wallet'
+import * as wallet from '../wallet/async-wallet'
 
 export default {
     components: {
@@ -66,12 +67,12 @@ export default {
             daemonTopoHeight: 0,
             walletTopoHeight: 0,
             daemonAddress: "No daemon",
-            syncValue: 0
+            syncValue: 0,
+            currentPrice: 0
         }
     },
     async mounted() {
         this.walletName = wallet.getWalletName()
-        await wallet.waitWASM()
         
         setInterval(() => {
             if (this.walletName)
@@ -80,13 +81,14 @@ export default {
 
         chart.priceChart().then(data => {
             this.priceChart = data
+            this.currentPrice = data.datas[0].data[data.datas[0].data.length - 1]
             this.chartReady = true
         })
     },
     methods: {
-        updateInfos() {
+        async updateInfos() {
             /* eslint-disable */
-            let infos = wallet.getInfos()
+            let infos = await wallet.getInfos()
             this.totalBalance = infos.TotalBalance
             this.lockedBalance = infos.LockedBalance
             this.unlockedBalance = infos.UnlockedBalance

@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import * as wallet from './wallet/wallet'
+import * as wallet from './wallet/async-wallet'
 import { EventBus } from './event-bus';
 
 export default {
@@ -102,7 +102,7 @@ export default {
   },
   mounted() {
     this.mobile = (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1)
-    wallet.useWASM()
+    wallet.init()
 
     EventBus.$on('isWalletOpen', walletOpen => {
       this.walletOpened = walletOpen

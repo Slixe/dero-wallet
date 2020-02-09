@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import * as wallet from '../wallet/wallet'
+import * as wallet from '../wallet/async-wallet'
 
 export default {
     data() {
@@ -48,7 +48,7 @@ export default {
         async newWallet() {
             this.btnDisabled = true
 
-            if (wallet.getEncryptedWallet(this.walletName) != null) {
+            if (await wallet.getEncryptedWallet(this.walletName) != null) {
                 this.alertMessage = "This wallet name is already used!"
                 this.alertShow = true
                 this.btnDisabled = false
@@ -57,20 +57,21 @@ export default {
                 return;
             }
 
-            let result = wallet.createWallet(this.walletName, this.password) //TODO async
-            if (result === "success") {
-                this.alertType = "success"
-                this.alertMessage = "Wallet successfully created!"
-                this.alertShow = true
-                this.walletSeed = wallet.getSeedInLanguage(this.seedSelected)
+            wallet.createWallet(this.walletName, this.password).then(async result => {
+                if (result === "success") {
+                    this.alertType = "success"
+                    this.alertMessage = "Wallet successfully created!"
+                    this.alertShow = true
+                    this.walletSeed =  await wallet.getSeedInLanguage(this.seedSelected)
 
-                setTimeout(() => {
-                    this.showSeed = true
-                } , 1500) //1.5s
-            }
+                    setTimeout(() => {
+                        this.showSeed = true
+                    } , 1500) //1.5s
+                }
+            })
         },
-        seed() {
-            this.walletSeed = wallet.getSeedInLanguage(this.seedSelected)
+        async seed() {
+            this.walletSeed = await wallet.getSeedInLanguage(this.seedSelected)
         }
     }
 }

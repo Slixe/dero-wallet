@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import * as wallet from '../wallet/wallet'
+import * as wallet from '../wallet/async-wallet'
 
 export default {
     data() {
@@ -23,13 +23,13 @@ export default {
             paymentID: ""
         }
     },
-    mounted() {
-        let infos = wallet.getInfos()
+    async mounted() {
+        let infos = await wallet.getInfos()
         this.walletAddress = infos.WalletAddress
     },
     methods: {
-        generateIA() {
-            let ia = wallet.generateIntegratedAddress()
+        async generateIA() {
+            let ia = await wallet.generateIntegratedAddress()
             this.integratedAddress = ia.Address
             this.paymentID = ia.PaymentId
         }

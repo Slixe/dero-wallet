@@ -13,7 +13,7 @@
         </div>
         <v-divider class="div-space"></v-divider>
         <div class="recover-buttons">
-            <v-btn outlined v-for="(button, key) in recoverButtons" :key="key"  @click="wip()" class="recover-button">{{ button }}</v-btn>
+            <v-btn outlined v-for="(button, key) in recoverButtons" :key="key"  :to="button.to" class="recover-button">{{ button.name }}</v-btn>
         </div>
         <v-btn outlined @click="wip()" class="recover-view-wallet">Recover View Only Wallet</v-btn>
     </v-card>
@@ -34,14 +34,27 @@
 </template>
 
 <script>
-import * as wallet from '../wallet/wallet'
+import * as wallet from '../wallet/async-wallet'
 
 export default {
     data() {
         return {
             walletSelected: null,
             availableWallets: [],
-            recoverButtons: ["Recover using Seed", "Recover using Recovery Key", "Recover using File"],
+            recoverButtons: [ //["Recover using Seed", "Recover using Recovery Key", "Recover using File"],
+                {
+                    name: "Recover using Seed",
+                    to: "/recover-seed"
+                },
+                {
+                    name: "Recover using Recovery Key",
+                    to: "/recover-key"
+                },
+                {
+                    name: "Recover using File",
+                    to: "/recover-file"
+                },
+            ],
             alertType: "error",
             alertShow: false,
             alertMessage: "An error as occured!",
@@ -63,12 +76,12 @@ export default {
         cancelPassword() {
             this.askPassword = false
         },
-        openWallet() {
+        async openWallet() {
             if (this.walletSelected != null)
             {
                 this.btnDisabled = true
-                let walletDump = wallet.getEncryptedWallet(this.walletSelected)
-                if (wallet.openEncryptedWallet(this.walletSelected, this.password, walletDump)) {
+                let walletDump = await wallet.getEncryptedWallet(this.walletSelected)
+                if (await wallet.openEncryptedWallet(this.walletSelected, this.password, walletDump)) {
                     this.alertType = "success"
                     this.alertMessage = "Wallet successfully opened!"
                     this.alertShow = true
@@ -89,6 +102,7 @@ export default {
            {
                 wallet.removeEncryptedWallet(this.walletSelected)
                 this.availableWallets = wallet.getEncryptedWallets()
+                this.walletSelected = null
                 this.alertType = "success"
                 this.alertMessage = "Wallet successfully deleted!"
                 this.alertShow = true
