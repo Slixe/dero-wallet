@@ -80,7 +80,7 @@ export default {
             if (this.walletSelected != null)
             {
                 this.btnDisabled = true
-                let walletDump = await wallet.getEncryptedWallet(this.walletSelected)
+                let walletDump = wallet.getEncryptedWallet(this.walletSelected)
                 if (await wallet.openEncryptedWallet(this.walletSelected, this.password, walletDump)) {
                     this.alertType = "success"
                     this.alertMessage = "Wallet successfully opened!"

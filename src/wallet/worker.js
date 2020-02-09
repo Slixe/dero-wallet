@@ -12,9 +12,13 @@ registerPromiseWorker(async (message) => {
     let result
 
     switch(name) {
-        case "start": {     
+        case "start": {
             await useWASM()
             result = true
+            break
+        }
+        case "ping": {
+            result = GO_Pinger()
             break
         }
         case "createWallet": {

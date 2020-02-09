@@ -28,7 +28,9 @@ export async function init()
         if (value) {
             closeWallet()
         }
-      })
+    })
+
+    //setInterval(() => run("ping"), 50) //we ping it every 50ms to prevent 'Go program has already exited'
 }
 
 export async function createWallet(walletName, password)
@@ -38,7 +40,7 @@ export async function createWallet(walletName, password)
     {
         setWalletName(walletName)
         await onlineMode(true)
-        let walletDump = dumpEncryptedWallet()
+        let walletDump = await dumpEncryptedWallet()
        
         addEncryptedWallet(walletName, walletDump)
     }
@@ -67,7 +69,7 @@ export async function recoverWalletSeed(walletName, password, seed)
     if (result === "success") {
         setWalletName(walletName)
         await onlineMode(true)
-        let walletDump = dumpEncryptedWallet()
+        let walletDump = await dumpEncryptedWallet()
 
         addEncryptedWallet(walletName, walletDump)
     }
@@ -117,7 +119,7 @@ export async function onlineMode(online)
 
 export async function closeWallet()
 {
-    let walletDump = dumpEncryptedWallet()
+    let walletDump = await dumpEncryptedWallet()
     updateEncryptedWallet(walletName, walletDump)
 
     onlineMode(false)
@@ -158,6 +160,7 @@ export function getEncryptedWallet(walletName)
             wallet = value.wallet
         i++
     }
+
     return wallet
 }
 
