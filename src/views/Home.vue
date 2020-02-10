@@ -68,22 +68,28 @@ export default {
             walletTopoHeight: 0,
             daemonAddress: "No daemon",
             syncValue: 0,
-            currentPrice: 0
+            currentPrice: 0,
+            interval: null
         }
     },
     async mounted() {
         this.walletName = wallet.getWalletName()
         
-        setInterval(() => {
+        this.interval = setInterval(() => {
             if (this.walletName)
                 this.updateInfos()
-        }, 1000) //every 100ms
+        }, 1000) //every 1s
 
         chart.priceChart().then(data => {
             this.priceChart = data
             this.currentPrice = data.datas[0].data[data.datas[0].data.length - 1]
             this.chartReady = true
         })
+    },
+    beforeDestroy() {
+            /* eslint-disable */
+        clearInterval(this.interval)
+        console.log("interval cleared!")
     },
     methods: {
         async updateInfos() {
@@ -98,6 +104,8 @@ export default {
             this.daemonAddress = infos.WalletDaemonAddress
 
             this.syncValue = ((this.walletTopoHeight / this.daemonTopoHeight) * 100).toFixed(0)
+
+            console.log("home updated")
         }
     }
 }

@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import * as wallet from '../wallet/wallet'
+import * as wallet from '../wallet/async-wallet'
 
 export default {
     data() {
@@ -41,10 +41,8 @@ export default {
         }
     },
     mounted() {
-        
-            /* eslint-disable */
-        console.log("MOUNTEDDDDDDDDDDDDDDDDDDDD")
         wallet.getTxHistory().then(result => {
+            /* eslint-disable */
             console.log(result)
         }).catch(err => {
             this.message = err

@@ -5,15 +5,26 @@ import registerPromiseWorker from 'promise-worker/register'
 const go = new Go();
 let wasmReady = false
 
+let secretid
+
 registerPromiseWorker(async (message) => {
+    const id = message.id
     const name = message.name
     const params = message.params
+
+    console.log(message)
+
+    if (secretid != null && secretid != id)
+    {
+        return "Invalid secretId"
+    }
 
     let result
 
     switch(name) {
         case "start": {
             await useWASM()
+            secretid = id
             result = true
             break
         }

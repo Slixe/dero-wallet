@@ -9,9 +9,33 @@ const promiseWorker = new PromiseWorker(worker)
 let hasWallet = false
 let walletName = "No Wallet"
 let wasmRunning = false
+let secretid
+
+//from original dero web wallet (wallet.js)
+let getRandomBytes = ((typeof self !== 'undefined' && (self.crypto || self.msCrypto)) ? function() { // Browsers
+    let crypto = (self.crypto || self.msCrypto), QUOTA = 65536
+    return function(n) {
+        let a = new Uint8Array(n)
+        for (var i = 0; i < n; i += QUOTA)
+        {
+            crypto.getRandomValues(a.subarray(i, i + Math.min(n - i, QUOTA)))
+        }
+        return a;
+    }
+} : function() { // Node
+    return require("crypto").randomBytes;
+}
+)();
+
+function toHexString(byteArray) {
+    return byteArray.reduce((output, elem) => (output + ('0' + elem.toString(16)).slice(-2)), '')
+}
+//end
+
 
 function run(name, ...params) {
     return promiseWorker.postMessage({
+        id: secretid,
         name,
         params
     })
@@ -22,6 +46,7 @@ export async function init()
     if (wasmRunning)
         return
 
+    secretid = toHexString(getRandomBytes(20))
     wasmRunning = await run("start")
 
     EventBus.$on('closeWallet', async value => {
@@ -119,10 +144,9 @@ export async function onlineMode(online)
 
 export async function closeWallet()
 {
+    await onlineMode(false)
     let walletDump = await dumpEncryptedWallet()
     updateEncryptedWallet(walletName, walletDump)
-
-    onlineMode(false)
     /*let result = */await run("closeWallet")
     hasWallet = false
     walletName = "No Wallet"
